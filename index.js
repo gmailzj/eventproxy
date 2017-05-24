@@ -1,4 +1,5 @@
 var eventproxy = require("./eventProxy.js");
+var EventProxy = eventproxy;
 var fs = require("fs");
 var ep = new eventproxy;
 
@@ -37,83 +38,53 @@ ep.all("d", "e", function(p1, p2) {
 // ep.emit("d", "data-d");
 // ep.emit("e", "data-e");
 
-// var getContent = require("./getContent");
-// getContent.getContent(function(err, data) {
-//     // console.log("数据:", arguments)
-// })
+var getContent = require("./getContent");
+getContent.getContent2(function(err, data) { // 如果出错了，data 为undefined
+    console.log((data))
+    console.log("数据:", arguments)
+})
 
 
 // process.exit();
 
 
 // test after方法
-var files = ["t1.txt", "t2.txt"]
-var ep = new eventproxy();
-ep.after('got_file', files.length, function(list) {
-    // 在所有文件的异步执行结束后将被执行
-    // 所有文件的内容都存在list数组中
-    console.log("read file list ok", list)
-});
-for (var i = 0; i < files.length; i++) {
-    // fs.readFile(files[i], 'utf-8', function(err, content) {
-    //     // 触发结果事件
-    //     ep.emit('got_file', content);
-    // });
-    fs.readFile(files[i], { encoding: 'utf8', flag: 'r' }, ep.group('got_file', function(data) {
-        return 'filter:' + data;
-    }));
-}
+// var files = ["t1.txt", "t2.txt"]
+// var ep = new eventproxy();
+// ep.after('got_file', files.length, function(list) {
+//     // 在所有文件的异步执行结束后将被执行
+//     // 所有文件的内容都存在list数组中
+//     console.log("read file list ok", list)
+// });
+// for (var i = 0; i < files.length; i++) {
+//     // fs.readFile(files[i], 'utf-8', function(err, content) {
+//     //     // 触发结果事件
+//     //     ep.emit('got_file', content);
+//     // });
+//     fs.readFile(files[i], { encoding: 'utf8', flag: 'r' }, ep.group('got_file', function(data) {
+//         return 'filter:' + data;
+//     }));
+// }
 
-
-
-// exports.getContent = function (callback) {
-//  var ep = new EventProxy();
-//   ep.all('tpl', 'data', function (tpl, data) {
-//     // 成功回调
-//     callback(null, {
-//       template: tpl,
-//       data: data
-//     });
-//   });
-//   // 侦听error事件
-//   ep.bind('error', function (err) {
-//     // 卸载掉所有handler
-//     ep.unbind();
-//     // 异常回调
-//     callback(err);
-//   });
-//   fs.readFile('template.tpl', 'utf-8', function (err, content) {
-//     if (err) {
-//       // 一旦发生异常，一律交给error事件的handler处理
-//       return ep.emit('error', err);
-//     }
+// var ep = new EventProxy();
+// ep.tail('tpl', 'data', function(tpl, data) {
+//     // 在所有指定的事件触发后，将会被调用执行
+//     // 参数对应各自的事件名的最新数据
+//     console.log(tpl, data);
+// });
+// fs.readFile('template.tpl', 'utf-8', function(err, content) {
 //     ep.emit('tpl', content);
-//   });
-//   db.get('some sql', function (err, result) {
-//     if (err) {
-//       // 一旦发生异常，一律交给error事件的handler处理
-//       return ep.emit('error', err);
-//     }
-//     ep.emit('data', result);
-//   });
-// };
-
-
-// exports.getContent = function (callback) {
-//  var ep = new EventProxy();
-//   ep.all('tpl', 'data', function (tpl, data) {
-//     // 成功回调
-//     callback(null, {
-//       template: tpl,
-//       data: data
+// });
+// setInterval(function() {
+//     fs.readFile('data.json', 'utf-8', function(err, content) {
+//         if (err) {
+//             // 一旦发生异常，一律交给error事件的handler处理
+//             return ep.emit('error', err);
+//         }
+//         ep.emit('data', content);
 //     });
-//   });
-//   // 添加error handler
-//   ep.fail(callback);
+// }, 2000);
 
-//   fs.readFile('template.tpl', 'utf-8', ep.done('tpl'));
-//   db.get('some sql', ep.done('data'));
-// };
 
 
 // ep.fail(callback);

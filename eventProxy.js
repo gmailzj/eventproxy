@@ -170,7 +170,7 @@
         var list, ev, callback, i, l;
         var both = 2;
         var calls = this._callbacks;
-        console.log(calls);
+        // console.log(calls);
         debug('Emit event %s with data %j', eventname, data);
         while (both--) {
             // 注意第一次运行到这里 both已经等于1了，如果是等于0，说明是用来最后处理ALL_EVENT(全部完成的事件bindForAll)
@@ -205,7 +205,7 @@
                         for (var j = start; j < arguments.length; j++) {
                             args.push(arguments[j]);
                         }
-                        console.log(args);
+                        // console.log(args);
                         // callback 必须是函数，用户自定义bind的时候，没有强制规定
                         callback.apply(this, args);
                     }
@@ -312,6 +312,8 @@
             var method = isOnce ? "once" : "bind";
 
             // 在这里绑定每个事件handler proxy[method] 对应 this.once、this.bind方法
+            // 在应用中的区别就是
+            // ep.tail的时候会使用bind，这样只要事件成功触发过，然后重复提交任意其中1个事件(tail绑定) 都会触发ALL_EVENT
             proxy[method](key, function(data) {
                 // 这里才是真正的单个事件处理 handler
 
@@ -425,7 +427,7 @@
      */
     EventProxy.prototype.tail = function() {
         var args = CONCAT.apply([], arguments);
-        args.push(false);
+        args.push(false); // 和EventProxy.prototype.all的唯一区别 true=>false
         _assign.apply(this, args);
         return this;
     };
@@ -610,6 +612,7 @@
         return function(err, data) {
             if (err) {
                 // put all arguments to the error handler
+                // 如果出错了，提交error
                 return that.emit.apply(that, ['error'].concat(SLICE.call(arguments)));
             }
 
