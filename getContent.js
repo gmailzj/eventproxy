@@ -57,6 +57,12 @@ exports.getContent2 = function(callback) {
     ep.fail(callback);
 
     fs.readFile('template.tpl', 'utf-8', ep.done('tpl'));
-    fs.readFile('data.json', 'utf-8', ep.done('data'));
+    // fs.readFile('data.json', 'utf-8', ep.done('data'));
+
+    fs.readFile('data.json', 'utf-8', ep.done(function(content) {
+        ep.emit("data", content)
+    }));
+
+    // ep = new EventProxy();
     //db.get('some sql', ep.done('data'));
 };

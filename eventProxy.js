@@ -610,6 +610,7 @@
     EventProxy.prototype.done = function(handler, callback) {
         var that = this;
         return function(err, data) {
+
             if (err) {
                 // put all arguments to the error handler
                 // 如果出错了，提交error
@@ -617,32 +618,35 @@
             }
 
             // callback(err, args1, args2, ...)
+            // 得到数据
             var args = SLICE.call(arguments, 1);
 
-            if (typeof handler === 'string') {
+            if (typeof handler === 'string') { // 如果第一个参数是字符串
                 // getAsync(query, ep.done('query'));
                 // or
                 // getAsync(query, ep.done('query', function (data) {
                 //   return data.trim();
                 // }));
-                if (callback) {
+                if (callback) { // 如果有回调，其实就是数据加工函数
                     // only replace the args when it really return a result
                     return that.emit(handler, callback.apply(null, args));
                 } else {
                     // put all arguments to the done handler
                     //ep.done('some');
-                    //ep.on('some', function(args1, args2, ...){});
+                    //ep.on('some', function(args1, args2, ...){});  触发事件，并传递数据
                     return that.emit.apply(that, [handler].concat(args));
                 }
             }
 
             // speed improve for mostly case: `callback(err, data)`
-            if (arguments.length <= 2) {
+            if (arguments.length <= 2) { // 第一个参数是函数 需要手动emit
+                // console.log("<=2")
                 return handler(data);
             }
 
             // callback(err, args1, args2, ...)
             handler.apply(null, args);
+            // console.log("last")
         };
     };
 

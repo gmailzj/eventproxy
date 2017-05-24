@@ -35,8 +35,8 @@ ep.all("d", "e", function(p1, p2) {
 // })
 
 
-// ep.emit("d", "data-d");
-// ep.emit("e", "data-e");
+ep.emit("d", "data-d");
+ep.emit("e", "data-e");
 
 var getContent = require("./getContent");
 getContent.getContent2(function(err, data) { // 如果出错了，data 为undefined
