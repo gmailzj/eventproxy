@@ -245,6 +245,7 @@
         return this;
     };
 
+    // later等于下面的三个选择之一 。优先级：setImmediate > process.nextTick > setTimeout(fn, 0);
     var later = (typeof setImmediate !== 'undefined' && setImmediate) ||
         (typeof process !== 'undefined' && process.nextTick) || function(fn) {
             setTimeout(fn, 0);
@@ -252,18 +253,18 @@
 
     /**
      * emitLater
-     * make emit async
+     * make emit async  异步事件触发
      */
     EventProxy.prototype.emitLater = function() {
         var self = this;
         var args = arguments;
-        later(function() {
+        later(function() { // 通过上面的later方案
             self.trigger.apply(self, args);
         });
     };
 
     /**
-     * Bind an event, and trigger it immediately.
+     * Bind an event, and trigger it immediately.  绑定并立即执行，传递 事件名、事件发生以后的回调、触发时传递的数据
      * @param {String} ev Event name.
      * @param {Function} callback Callback.
      * @param {Mix} data The data that will be passed to calback as arguments.
@@ -274,7 +275,7 @@
         return this;
     };
     /**
-     * `immediate` alias
+     * `immediate` alias 和 immediate 别名等价
      */
     EventProxy.prototype.asap = EventProxy.prototype.immediate;
 
@@ -427,7 +428,7 @@
      */
     EventProxy.prototype.tail = function() {
         var args = CONCAT.apply([], arguments);
-        args.push(false); // 和EventProxy.prototype.all的唯一区别 true=>false
+        args.push(false); // 和EventProxy.prototype.all的唯一区别 true=>false，从而来控制bind 和once
         _assign.apply(this, args);
         return this;
     };
@@ -519,13 +520,13 @@
         var index = that._after[group].index;
         that._after[group].index++;
         return function(err, data) {
-            if (err) {
+            if (err) { // 错误处理
                 // put all arguments to the error handler 提交错误
                 return that.emit.apply(that, ['error'].concat(SLICE.call(arguments)));
             }
-            that.emit(group, {
+            that.emit(group, { // 提交事件组
                 index: index,
-                // callback(err, args1, args2, ...) 如果ep.group()的时候提供了callback参数，就是增加中间层处理data
+                // callback(err, args1, args2, ...) 如果ep.group()的时候提供了callback参数，就是增加中间层加工data
                 result: callback ? callback.apply(null, SLICE.call(arguments, 1)) : data
             });
         };
@@ -533,23 +534,24 @@
 
     /**
      * The callback will be executed after any registered event was fired. It only executed once.
+     * 回调将在任意一个注册了的事件触发以后执行，而且只执行一次
      * @param {String} eventname1 Event name.
      * @param {String} eventname2 Event name.
      * @param {Function} callback The callback will get a map that has data and eventname attributes.
      */
     EventProxy.prototype.any = function() {
         var proxy = this,
-            callback = arguments[arguments.length - 1],
-            events = SLICE.call(arguments, 0, -1),
-            _eventname = events.join("_");
+            callback = arguments[arguments.length - 1], // 最后一个参数为callback
+            events = SLICE.call(arguments, 0, -1), // 事件名数组
+            _eventname = events.join("_"); // eg:  event1_event2_event3
 
         debug('Add listenner for Any of events %j emit', events);
-        proxy.once(_eventname, callback);
+        proxy.once(_eventname, callback); // 只执行一次
 
         var _bind = function(key) {
-            proxy.bind(key, function(data) {
+            proxy.bind(key, function(data) { // 对每一个事件绑定
                 debug('One of events %j emited, execute the listenner');
-                proxy.trigger(_eventname, { "data": data, eventName: key });
+                proxy.trigger(_eventname, { "data": data, eventName: key }); // 触发`event1_event2_event3`事件
             });
         };
 
@@ -566,10 +568,12 @@
     EventProxy.prototype.not = function(eventname, callback) {
         var proxy = this;
         debug('Add listenner for not event %s', eventname);
+
+        // 这里绑定 ALL_EVENT  ，在trigger单个事件的时候，在trigger方法里面会有ALL_EVENT的判断
         proxy.bindForAll(function(name, data) {
             if (name !== eventname) {
                 debug('listenner execute of event %s emit, but not event %s.', name, eventname);
-                callback(data);
+                callback(data); // 传递数据并执行回调
             }
         });
     };

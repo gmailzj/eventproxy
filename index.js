@@ -1,6 +1,8 @@
 var eventproxy = require("./eventProxy.js");
 var EventProxy = eventproxy;
 var fs = require("fs");
+const assert = require('assert');
+const equal = assert.equal;
 var ep = new eventproxy;
 
 // var callback = function(err, data) {
@@ -44,6 +46,34 @@ getContent.getContent2(function(err, data) { // 如果出错了，data 为undefi
     console.log("数据:", arguments)
 })
 
+// any 用法 任何一个被注册的事件触发都会导致注册的事件被触发
+var obj = new EventProxy();
+var counter = 0;
+var eventData1 = "eventData1";
+var eventData2 = "eventData2";
+obj.any('event1', 'event2', function(map) {
+    assert.equal(map.data, eventData1, 'Return data should be evnetData1.');
+    assert.equal(map.eventName, "event1", 'Event name should be event1.');
+    counter += 1;
+});
+obj.trigger('event1', eventData1);
+assert.equal(counter, 1, 'counter should be incremented.');
+obj.trigger('event2', 2);
+assert.equal(counter, 1, 'counter should not be incremented.');
+
+
+// not 用法 除了某种事件以外的其他事件都可以触发
+var obj = new EventProxy();
+var counter = 0;
+obj.not('event1', function(data) {
+    counter += 1;
+});
+obj.trigger('event1', 1);
+equal(counter, 0, 'counter should not be incremented.');
+obj.trigger('event2', 2);
+equal(counter, 1, 'counter should be incremented.');
+obj.trigger('event2', 2);
+equal(counter, 2, 'counter should be incremented.');
 
 // process.exit();
 
